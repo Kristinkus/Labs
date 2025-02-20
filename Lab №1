@@ -1,0 +1,148 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <locale.h>
+#include <stdlib.h>
+
+void verification(FILE* fp); //проверка
+void file_bin_write(FILE* fp);//ввод
+void file_bin_read(FILE* fp);//чтение
+void sort_num(FILE* fp);//бабле сорт
+int val_count(FILE* file);//непохожие значения
+void revers(FILE* file);//ревёрс
+
+int main() {
+    setlocale(LC_ALL, "rus");
+
+    const char* my_file = "my_file.bin";
+    FILE* fp;
+
+
+    fp = fopen(my_file, "wb");
+    verification(fp);
+    file_bin_write(fp);
+    fclose(fp);
+
+
+    fp = fopen(my_file, "r+b");
+    verification(fp);
+    sort_num(fp);
+    fclose(fp);
+
+
+    fp = fopen(my_file, "rb");
+    verification(fp);
+    file_bin_read(fp);
+    int count = val_count(fp);
+    printf("Количество различных значений: %d\n", count);
+    fclose(fp);
+
+    fp = fopen(my_file, "r+b");
+    verification(fp);
+    revers(fp);
+    fclose(fp);
+
+    fp = fopen(my_file, "rb");
+    verification(fp);
+    file_bin_read(fp);
+    fclose(fp);
+
+    return 0;
+}
+
+void file_bin_write(FILE* fp) {
+    int value;
+    puts("Заполните файл целыми числами. Для окончания введите нечисловое значение");
+    printf("Введите число: ");
+    while (1) {
+        if (scanf("%d", &value) != 1) {
+            break;
+        }
+
+        if (fwrite(&value, sizeof(int), 1, fp) != 1) {
+            perror("Ошибка записи данных в файл");
+            fclose(fp);
+            return;
+        }
+    }
+}
+
+void file_bin_read(FILE* fp) {
+    int value;
+    printf("Содержимое файла:\n");
+    while (fread(&value, sizeof(int), 1, fp) == 1) {
+        printf("%d\n", value);
+    }
+}
+
+int val_count(FILE* file) {
+    fseek(file, 0, SEEK_END);
+    int size = ftell(file) / sizeof(int);
+    rewind(file);
+    int count = 0;
+    int prev_value = 0;
+    int first_read = 1;
+
+    for (int i = 0; i < size; i++) {
+        int value;
+        fread(&value, sizeof(int), 1, file);
+        if (!first_read && value == prev_value) {
+            count++;
+        }
+        prev_value = value;
+        first_read = 0;
+    }
+
+    return size - count;
+}
+
+void verification(FILE* fp) {
+    if (fp == NULL) {
+        perror("Ошибка при открытии файла");
+        exit(1);
+    }
+}
+
+void sort_num(FILE* file) {
+    fseek(file, 0, SEEK_END);
+    int size = ftell(file) / sizeof(int);
+    rewind(file);
+
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            int a, b;
+            fseek(file, j * sizeof(int), SEEK_SET);
+            fread(&a, sizeof(int), 1, file);
+            fread(&b, sizeof(int), sizeof(int), file);
+
+            if (a < b) {
+                fseek(file, j * sizeof(int), SEEK_SET);
+                fwrite(&b, sizeof(int), 1, file);
+                fwrite(&a, sizeof(int), 1, file);
+            }
+        }
+    }
+}
+
+void revers(FILE* file) {
+    fseek(file, 0, SEEK_END);
+    int size = ftell(file) / sizeof(int);
+    rewind(file);
+
+    for (int i = 0; i < size / 2; i++) {
+        int a, b;
+
+        fseek(file, i * sizeof(int), SEEK_SET);
+        fread(&a, sizeof(int), 1, file);
+
+
+        fseek(file, (size - 1 - i) * sizeof(int), SEEK_SET);
+        fread(&b, sizeof(int), 1, file);
+
+  
+        fseek(file, i * sizeof(int), SEEK_SET);
+        fwrite(&b, sizeof(int), 1, file);
+
+        fseek(file, (size - 1 - i) * sizeof(int), SEEK_SET);
+        fwrite(&a, sizeof(int), 1, file);
+    }
+}
