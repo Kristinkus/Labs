@@ -3,12 +3,14 @@
 #include <locale.h>
 #include <stdlib.h>
 
-void verification(FILE* fp); //проверка
-void file_bin_write(FILE* fp);//ввод
-void file_bin_read(FILE* fp);//чтение
-void sort_num(FILE* fp);//бабле сорт
-int val_count(FILE* file);//непохожие значения
-void revers(FILE* file);//ревёрс
+void verification(FILE* fp); // проверка
+void file_bin_write(FILE* fp); // ввод
+void file_bin_read(FILE* fp); // чтение
+void sort_num(FILE* fp); //бабле сорт
+int val_count(FILE* file); // подсчет уникальных значений
+void revers(FILE* file); // реверс
+void sec_cort(FILE* file, int tell); повторная сортировка
+void insertNumberAtPosition(const char* filename, int number); // вставка числа(анюзебл)
 
 int main() {
     setlocale(LC_ALL, "rus");
@@ -16,37 +18,69 @@ int main() {
     const char* my_file = "my_file.bin";
     FILE* fp;
 
-
     fp = fopen(my_file, "wb");
     verification(fp);
     file_bin_write(fp);
+    int tell = ftell(fp)/sizeof(int);
     fclose(fp);
-
+    fflush(fp);
+    rewind(stdin);
 
     fp = fopen(my_file, "r+b");
     verification(fp);
     sort_num(fp);
     fclose(fp);
 
-
     fp = fopen(my_file, "rb");
     verification(fp);
     file_bin_read(fp);
+
+    fclose(fp);
+
+    fp = fopen(my_file, "rb");
+    verification(fp);
     int count = val_count(fp);
     printf("Количество различных значений: %d\n", count);
     fclose(fp);
 
+
+    fp = fopen(my_file, "ab");
+
+    verification(fp);
+    file_bin_write(fp);
+    fclose(fp);
+    rewind(stdin);
+
+    fp = fopen(my_file, "r+b");
+    verification(fp);
+    sec_cort(fp, tell);
+    fclose(fp);
+
+    fp = fopen(my_file, "rb");
+    verification(fp);
+    file_bin_read(fp);
+    fclose(fp);
+
+   
     fp = fopen(my_file, "r+b");
     verification(fp);
     revers(fp);
     fclose(fp);
 
+    
     fp = fopen(my_file, "rb");
     verification(fp);
     file_bin_read(fp);
     fclose(fp);
 
     return 0;
+}
+
+void verification(FILE* fp) {
+    if (fp == NULL) {
+        perror("Ошибка открытия файла");
+        exit(1);
+    }
 }
 
 void file_bin_write(FILE* fp) {
@@ -64,42 +98,91 @@ void file_bin_write(FILE* fp) {
             return;
         }
     }
+
+    
 }
 
 void file_bin_read(FILE* fp) {
-    int value;
-    printf("Содержимое файла:\n");
-    while (fread(&value, sizeof(int), 1, fp) == 1) {
-        printf("%d\n", value);
+    
+    int number;
+    while (fread(&number, sizeof(int), 1, fp) == 1) {
+        printf("%d ", number);
     }
+    printf("\n");
 }
 
-int val_count(FILE* file) {
+int val_count(FILE* fp) {
+    
+    int number, count = 0;
+    int last_number = -1; 
+    while (fread(&number, sizeof(int), 1, fp) == 1) {
+        if (number != last_number) {
+            count++;
+            last_number = number;
+        }
+    }
+    rewind(fp);
+    return count;
+}
+
+void revers(FILE* file) {
     fseek(file, 0, SEEK_END);
     int size = ftell(file) / sizeof(int);
     rewind(file);
-    int count = 0;
-    int prev_value = 0;
-    int first_read = 1;
-
-    for (int i = 0; i < size; i++) {
-        int value;
-        fread(&value, sizeof(int), 1, file);
-        if (!first_read && value == prev_value) {
-            count++;
-        }
-        prev_value = value;
-        first_read = 0;
+    for (int i = 0; i < size / 2; i++) {
+        int a, b;
+        
+        fseek(file, i * sizeof(int), SEEK_SET);
+        fread(&a, sizeof(int), 1, file);
+        
+        fseek(file, (size - 1 - i) * sizeof(int), SEEK_SET);
+        fread(&b, sizeof(int), 1, file);
+       
+        fseek(file, i * sizeof(int), SEEK_SET);
+        fwrite(&b, sizeof(int), 1, file);
+        fseek(file, (size - 1 - i) * sizeof(int), SEEK_SET);
+        fwrite(&a, sizeof(int), 1, file);
     }
-
-    return size - count;
 }
 
-void verification(FILE* fp) {
-    if (fp == NULL) {
-        perror("Ошибка при открытии файла");
-        exit(1);
+
+void insertNumberAtPosition(const char* filename, int number) {
+    FILE* file = fopen(filename, "a+b");
+
+    if (file == NULL) {
+        printf("Не удалось открыть файл %s\n", filename);
+        return;
     }
+
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    int elementCount = fileSize / sizeof(int);
+
+    int left, right;
+    int position = 0;
+
+    fseek(file, 0, SEEK_SET);
+
+    while (fread(&left, sizeof(int), 1, file) == 1) {
+        if (fread(&right, sizeof(int), 1, file) != 1) {
+            right = number - 1;
+        }
+
+        if (left <= number && number <= right) {
+            fseek(file, position * sizeof(int), SEEK_SET);
+            fwrite(&number, sizeof(int), 1, file);
+            break;
+        }
+
+        fseek(file, -1 * sizeof(int), SEEK_CUR);
+        position++;
+    }
+
+    if (position == elementCount) {
+        fwrite(&number, sizeof(int), 1, file);
+    }
+
+    fclose(file);
 }
 
 void sort_num(FILE* file) {
@@ -112,7 +195,7 @@ void sort_num(FILE* file) {
             int a, b;
             fseek(file, j * sizeof(int), SEEK_SET);
             fread(&a, sizeof(int), 1, file);
-            fread(&b, sizeof(int), sizeof(int), file);
+            fread(&b, sizeof(int), 1, file);
 
             if (a < b) {
                 fseek(file, j * sizeof(int), SEEK_SET);
@@ -123,26 +206,26 @@ void sort_num(FILE* file) {
     }
 }
 
-void revers(FILE* file) {
-    fseek(file, 0, SEEK_END);
+
+void sec_cort(FILE* file, int tell)
+{
+    fseek(file, tell, SEEK_END);
     int size = ftell(file) / sizeof(int);
     rewind(file);
 
-    for (int i = 0; i < size / 2; i++) {
-        int a, b;
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            int a, b;
+            fseek(file, j * sizeof(int), SEEK_SET);
+            fread(&a, sizeof(int), 1, file);
+            fread(&b, sizeof(int), 1, file);
 
-        fseek(file, i * sizeof(int), SEEK_SET);
-        fread(&a, sizeof(int), 1, file);
-
-
-        fseek(file, (size - 1 - i) * sizeof(int), SEEK_SET);
-        fread(&b, sizeof(int), 1, file);
-
-  
-        fseek(file, i * sizeof(int), SEEK_SET);
-        fwrite(&b, sizeof(int), 1, file);
-
-        fseek(file, (size - 1 - i) * sizeof(int), SEEK_SET);
-        fwrite(&a, sizeof(int), 1, file);
+            if (a < b) {
+                fseek(file, j * sizeof(int), SEEK_SET);
+                fwrite(&b, sizeof(int), 1, file);
+                fwrite(&a, sizeof(int), 1, file);
+            }
+        }
     }
 }
+    
