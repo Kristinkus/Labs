@@ -1,0 +1,143 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <locale.h>
+#include <stdlib.h>
+#include<locale.h>
+
+void file_text_write(FILE* fp);
+void reading(FILE* fp);
+int verefication(FILE* fp);
+void chet_num(FILE* fp);
+void multiplication(FILE* input_fp, FILE* output_fp);
+
+int main(int argc, char** argv)
+{
+    setlocale(LC_ALL, "ru");
+    if (argc < 3) {
+        printf("Ошибка: Необходимо указать имя файла.\n");
+        return 1;
+    }
+
+    FILE* fp;
+    char* file = argv[1];
+    fp = fopen(file, "w");
+    verefication(fp);
+    file_text_write(fp);
+    fclose(fp);
+
+    fp = fopen(file, "r");
+    verefication(fp);
+    reading(fp);
+    fclose(fp);
+
+    fp = fopen(file, "r");
+    verefication(fp);
+    chet_num(fp);
+    fclose(fp);
+
+
+    FILE* mult;
+    char* file_new = argv[2];
+    fp = fopen(file, "r");
+    mult = fopen(file_new, "w");
+    multiplication(fp, mult);
+    fclose(fp);
+    fclose(mult);
+
+    return 0;
+}
+
+
+
+void multiplication(FILE* input_fp, FILE* output_fp)
+{
+    int num1, num2;
+    if ((fscanf(input_fp, "%d", &num1) != 1) or (fscanf(input_fp, "%d", &num2) != 1))
+    {
+        printf("Not enough numbers");
+        fclose(input_fp);
+        return;
+    }
+
+    fprintf(output_fp, "        %d\n", num1);
+    fprintf(output_fp, " x\n");
+    fprintf(output_fp, "        %d\n", num2);
+    fprintf(output_fp, "-----------\n");
+
+
+    int num1_len = snprintf(NULL, 0, "%d", num1);
+    int num2_len = snprintf(NULL, 0, "%d", num2);
+    int max_len = num1_len > num2_len ? num1_len : num2_len;
+
+
+    int temp_num = num2;
+    int pos = 1;
+    int total = 0;
+
+    while (temp_num > 0) 
+    {
+        int digit = temp_num % 10;
+        int result = num1 * digit;
+        fprintf(output_fp, "%*d\n", max_len + 3, result * pos);
+        total += result * pos;
+        temp_num /= 10;
+        if (temp_num > 0)
+        {
+            fprintf(output_fp, "+\n");
+        }
+        pos *= 10;
+    }
+
+    fprintf(output_fp, "-----------\n");
+    fprintf(output_fp, "%d\n", total);
+
+}
+
+
+int verefication(FILE* fp)
+{
+    if (!fp)
+    {
+        printf("Error, check your actions");
+        return 1;
+    }
+}
+
+
+
+void chet_num(FILE* fp)
+{
+    printf("\nЧётные числа: ");
+    int value;
+    while ((fscanf(fp, "%d", &value)) != EOF)
+    {
+        if (value % 2 == 0)
+        {
+            printf("%d ", value);
+        }
+
+    }
+}
+
+
+
+void reading(FILE* fp)
+{
+    printf("Содержимое файла: ");
+    int value;
+    while ((fscanf(fp, "%d", &value)) != EOF)
+    {
+        printf("%d ", value);
+    }
+}
+    
+
+void file_text_write(FILE* fp)
+{
+    int value;
+    printf("Ввод закончится, когда будет введено нечисловое значение\n");
+    printf("Введите числа: ");
+    while (scanf("%d", &value) == 1) {
+        fprintf(fp, "%d ", value);
+    }
+}
