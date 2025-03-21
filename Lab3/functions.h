@@ -29,10 +29,27 @@ typedef struct{
 	double avarage_grade;
 } Student;
 
+
+
+char* perform_data(char* data)
+{
+    int len = sizeof(data) / sizeof(char);
+    for (int i = 0; i < len; i++)
+    {
+        if (data[i] == '\n')
+        {
+            data[i] = '\0';
+        }
+
+    }
+
+    return data;
+}
+
 void enter_information(Student *unique) 
 {
-    SetConsoleOutputCP(CP_UTF8);  // Устанавливаем кодировку консоли в UTF-8
-    SetConsoleCP(CP_UTF8);        // Устанавливаем кодировку ввода в UTF-8
+    SetConsoleOutputCP(CP_UTF8);  
+    SetConsoleCP(CP_UTF8);
     setlocale(LC_ALL, "RU");
 
     unique->passbook_number = inputPositiveInt("Введите номер зачётной книжки: ");
@@ -40,21 +57,67 @@ void enter_information(Student *unique)
     unique->last_name = read_line();
 	printf("Введите дату зачисления: ");
     fgets(unique->data.data, sizeof(unique->data.data), stdin);
-    unique->data.data[strcspn(unique->data.data, "\n")] = '\0';
-    unique->avarage_grade = inputDouble("Введите средний балл : ");
+    perform_data(unique->data.data);
+    unique->avarage_grade = inputDoubleInRange("Введите средний балл : ", 0, 10);
 	
 }
+
+bool continue_prog(int a) 
+{
+    if (a == 1) return false;
+    else if (a == 2) return true;
+
+}
+
 
 
 void print_student(const Student* unique) {
     printf("Номер зачётной книжки: %d\n", unique->passbook_number);
-    wprintf(L"Фамилия: %s\n", unique->last_name);
+    printf("Фамилия: %s\n", unique->last_name);
     printf("Дата зачисления: %s\n", unique->data.data);
-    printf("Средний балл: %.1lf\n", unique->avarage_grade);
+    printf("Средний балл: %.2lf\n", unique->avarage_grade);
 }
 
 
+
+bool compare_resp_and_name(char* name_in_struckt,const char* last_name) {
+    int len_word1 = sizeof(name_in_struckt)/ sizeof(char);
+    int len_word2 = sizeof(last_name) / sizeof(char);
+    if (len_word1 != len_word2) 
+    {
+        return false;
+
+    }
+    for (int i = 0; i < len_word1; i++)
+    {
+        if (name_in_struckt[i] != last_name[i])
+        {
+            return false;
+        }
+    }
+    return true;
+
+
+}
+
 void find_student_by_last_name(Student* unique, int n, const char* last_name)
+{
+    int flag = 0;
+    for (int i = 0; i < n; i++) {
+        if (compare_resp_and_name(unique[i].last_name, last_name))
+        {
+            printf("Найден студент:\n");
+            print_student(&unique[i]);
+            flag = 1;
+        }
+    }
+    if (!flag) {
+        printf("Cтуденты с фамилией '%s' не найдены.\n", last_name);
+    }
+}
+
+/*
+void find_student_by_last_name1(Student* unique, int n, const char* last_name)
 {
     int flag = 0;
     for (int i = 0; i < n; i++) {
@@ -69,7 +132,7 @@ void find_student_by_last_name(Student* unique, int n, const char* last_name)
         printf("Cтуденты с фамилией '%s' не найдены.\n", last_name);
     }
 }
-
+*/
 
 
 
@@ -103,20 +166,16 @@ void menu()
 }
 
 
-void task2() 
+void task2(Student*unique)
 {
-    SetConsoleOutputCP(CP_UTF8);  // Устанавливаем кодировку консоли в UTF-8
-    SetConsoleCP(CP_UTF8);        // Устанавливаем кодировку ввода в UTF-8
-    setlocale(LC_ALL, "RU");
+    setlocale(LC_ALL, "Russian_Russia.1251");
     int action;
     int n = 0;
     char* last_name;
     int number_bookpass_max;
 
-    Student* unique = (Student*)malloc(n * sizeof(Student));
     
     do {
- 
         
         menu();
         if (n == 0)
@@ -134,7 +193,6 @@ void task2()
                 printf("\nДанные о студенте %d:\n", i + 1);
                 print_student(&unique[i]);
             }
-            
             
             break;
 
@@ -171,4 +229,6 @@ void task2()
         free(unique[i].last_name);
     }
     free(unique);
+
 }
+
