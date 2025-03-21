@@ -1,42 +1,41 @@
 #pragma once
-#pragma once
 #include <stdio.h>
 #include <string.h>
 #include<locale.h>
 #include <windows.h>
+#include <ctype.h>
 
-int inputInt(const char* prompt) {
+int inputInt(const char* prompt) 
+{
     int value;
     while (1)
     {
         printf("%s", prompt);
         if (scanf_s("%d", &value) == 1) {
-            // Очищаем буфер ввода
             while (getchar() != '\n');
             return value;
         }
         printf("Ошибка. Введены некорректные данные. \n");
-        // Очищаем буфер ввода
         while (getchar() != '\n');
     }
 }
 
-double inputDouble(const char* prompt) {
+double inputDouble(const char* prompt) 
+{
     double value;
     while (1) {
         printf("%s", prompt);
         if (scanf_s("%lf", &value) == 1) {
-            // Очищаем буфер ввода
             while (getchar() != '\n');
             return value;
         }
         printf("Ошибка. Введите корректные данные: \n");
-        // Очищаем буфер ввода
         while (getchar() != '\n');
     }
 }
 
-int inputPositiveInt(const char* prompt) {
+int inputPositiveInt(const char* prompt) 
+{
     int value;
     while (1) {
         value = inputInt(prompt);
@@ -47,7 +46,8 @@ int inputPositiveInt(const char* prompt) {
     }
 }
 
-int inputIntInRange(const char* prompt, int min, int max) {
+int inputIntInRange(const char* prompt, int min, int max) 
+{
     int value;
     while (1) {
         value = inputInt(prompt);
@@ -60,9 +60,25 @@ int inputIntInRange(const char* prompt, int min, int max) {
 
 
 
-char* read_data() {
-    SetConsoleOutputCP(CP_UTF8);  // Устанавливаем кодировку консоли в UTF-8
-    SetConsoleCP(CP_UTF8);        // Устанавливаем кодировку ввода в UTF-8
+int inputDoubleInRange(const char* prompt, double min, double max) 
+{
+    double value;
+    while (1) {
+        value = inputDouble(prompt);
+        if (value >= min && value <= max) {
+            return value;
+        }
+        printf("Ошибка. Ввведено некоректное число. ");
+    }
+}
+
+
+
+
+char* read_data() 
+{
+    SetConsoleOutputCP(CP_UTF8); 
+    SetConsoleCP(CP_UTF8);       
     setlocale(LC_ALL, "RU");
     int size = 10;
     int len = 0;
@@ -86,20 +102,57 @@ char* read_data() {
 }
 
 
+
+bool kris_is_digit(char c)
+{
+    char mass[44] = "0123456789/*-+!@#$%^&*()_+=)(?:%;№.,`~<>|";
+    for (int i = 0; i < 11; i++)
+    {
+        if (c == mass[i]) return false;
+
+    }
+    return true;
+}
+
+/*
+char* read_data_line()
+{
+    //char mass[12] = "0123456789.";
+    char* str = read_data();
+    if (str == NULL)
+    {
+        printf("Cтрока не должна быть пустой");
+        str = read_line();
+
+    }
+    int len_data = sizeof(str) / sizeof(char);
+    if (len_data < 5)
+    {
+        printf("Слишком мало символов для даты");
+        str = read_data_line();
+    }
+    return str;
+
+}
+*/
+
 char* read_line()
 {
-    SetConsoleOutputCP(CP_UTF8);  // Устанавливаем кодировку консоли в UTF-8
-    SetConsoleCP(CP_UTF8);        // Устанавливаем кодировку ввода в UTF-8
+    SetConsoleOutputCP(866);
+    SetConsoleCP(CP_UTF8);       
     setlocale(LC_ALL, "RU");
     char* str = read_data();
     if (str == NULL)
     {
         printf("Cтрока не должна быть пустой");
         str = read_line();
+        
     }
-    for (int i = 0; i < strlen(str); i++)
+    int len_str = sizeof(str) / sizeof(char);
+
+    for (int i = 0; i < len_str; i++)
     {
-        if (str[i] >= 0 and str[i] <= 9)
+        if (kris_is_digit(str[i]) == false)
         {
             printf("Ввод не должен содержать цифры\n");
             printf("Повторите ввод: ");
