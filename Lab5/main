@@ -1,6 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
 int main() {
     int size;
     printf("Введите размер стека: ");
+    while(True)
+{
     scanf("%d", &size);
 
     Stack* stack = createStack(size);
@@ -14,7 +18,8 @@ int main() {
 
     int sum = sumEvenNumbers(stack);
     printf("Сумма чётных чисел: %d\n", sum);
-
+    task2();
     freeStack(stack);
     return 0;
+}
 }
