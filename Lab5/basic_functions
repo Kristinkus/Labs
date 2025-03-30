@@ -1,0 +1,158 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Stack {
+    int *data;
+    int top;
+    int size;
+} Stack;
+
+Stack* createStack(int size) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->data = (int*)malloc(size * sizeof(int));
+    stack->top = -1;
+    stack->size = size;
+    return stack;
+}
+
+void push(Stack* stack, int value) {
+    if (stack->top < stack->size - 1) {
+        stack->data[++stack->top] = value;
+    }
+}
+
+int pop(Stack* stack) {
+    if (stack->top >= 0) {
+        return stack->data[stack->top--];
+    }
+    return 0;
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+int sumEvenNumbers(Stack* stack) {
+    int sum = 0;
+    while (!isEmpty(stack)) {
+        int value = pop(stack);
+        if (value % 2 == 0) {
+            sum += value;
+        }
+    }
+    return sum;
+}
+
+void freeStack(Stack* stack) {
+    free(stack->data);
+    free(stack);
+}
+
+
+
+typedef struct Stack {
+    int *data;
+    int top;
+    int size;
+} Stack;
+
+Stack* createStack(int size) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->data = (int*)malloc(size * sizeof(int));
+    stack->top = -1;
+    stack->size = size;
+    return stack;
+}
+
+void push(Stack* stack, int value) {
+    if (stack->top < stack->size - 1) {
+        stack->data[++stack->top] = value;
+    }
+}
+
+int pop(Stack* stack) {
+    if (stack->top >= 0) {
+        return stack->data[stack->top--];
+    }
+    return -1;
+}
+
+int peek(Stack* stack) {
+    if (stack->top >= 0) {
+        return stack->data[stack->top];
+    }
+    return -1;
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+void inputAscending(Stack* stack) {
+    int n, value, previous = -1;
+    printf("Введите количество элементов: ");
+    scanf("%d", &n);
+    printf("Введите элементы по возрастанию:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &value);
+        if (value >= previous) {
+            push(stack, value);
+            previous = value;
+        } else {
+            printf("Элемент должен быть больше или равен %d. Попробуйте снова.\n", previous);
+            i--;
+        }
+    }
+}
+
+void mergeStacks(Stack* stack1, Stack* stack2, Stack* resultStack) {
+    while (!isEmpty(stack1) && !isEmpty(stack2)) {
+        if (peek(stack1) <= peek(stack2)) {
+            push(resultStack, pop(stack1));
+        } else {
+            push(resultStack, pop(stack2));
+        }
+    }
+    while (!isEmpty(stack1)) {
+        push(resultStack, pop(stack1));
+    }
+    while (!isEmpty(stack2)) {
+        push(resultStack, pop(stack2));
+    }
+}
+
+void printStack(Stack* stack) {
+    while (!isEmpty(stack)) {
+        printf("%d ", pop(stack));
+    }
+    printf("\n");
+}
+
+void freeStack(Stack* stack) {
+    free(stack->data);
+    free(stack);
+}
+void task2() {
+    int size1, size2;
+    printf("Введите размер первого стека: ");
+    scanf("%d", &size1);
+    Stack* stack1 = createStack(size1);
+    inputAscending(stack1);
+
+    printf("Введите размер второго стека: ");
+    scanf("%d", &size2);
+    Stack* stack2 = createStack(size2);
+    inputAscending(stack2);
+
+    Stack* resultStack = createStack(size1 + size2);
+    mergeStacks(stack1, stack2, resultStack);
+
+    printf("Объединённый стек по возрастанию:\n");
+    printStack(resultStack);
+
+    freeStack(stack1);
+    freeStack(stack2);
+    freeStack(resultStack);
+
+
+}
