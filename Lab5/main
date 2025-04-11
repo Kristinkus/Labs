@@ -1,25 +1,277 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
-int main() {
-    int size;
-    printf("Введите размер стека: ");
-    while(True)
+#include <locale.h>
+#include "checks.h"
+#include "functions_for_stack.h"
+#include "default_functions.h"
+
+
+typedef struct tag_fp {
+	int* data;
+	int value;
+	struct tag_fp* next;
+} FORFILE;
+
+int operationPriority(char operation)
 {
-    scanf("%d", &size);
+	switch (operation)
+	{
+		case '+':
+			return 1;
+		case '-':
+			return 1;
+		case '*':
+			return 2;
+		case '/':
+			return 2;
+		default:
+			return 0;
 
-    Stack* stack = createStack(size);
-
-    printf("Введите элементы стека:\n");
-    for (int i = 0; i < size; i++) {
-        int value;
-        scanf("%d", &value);
-        push(stack, value);
-    }
-
-    int sum = sumEvenNumbers(stack);
-    printf("Сумма чётных чисел: %d\n", sum);
-    task2();
-    freeStack(stack);
-    return 0;
+	}
 }
+
+
+
+int PolandNotation(OBJ* output) {
+	OBJ* calc = NULL;
+	OBJ* reversed = NULL;
+
+	while (output != NULL) {
+		reversed = push(reversed, output->data);
+		output = output->next;
+	}
+	output = reversed;
+
+	while (output != NULL) {
+		int token = output->data;
+		output = pop(output);
+
+		if (token != '+' && token != '-' && token != '*' && token != '/') {
+			calc = push(calc, token);
+		}
+		else 
+		{ 
+			if (calc == NULL || calc->next == NULL) {
+				printf("Ошибка: неверное выражение\n");
+				exit(1);
+			}
+			int b = calc->data;
+			calc = pop(calc);
+			int a = calc->data;
+			calc = pop(calc);
+
+			switch (token) {
+			case '+': calc = push(calc, a + b); break;
+			case '-': calc = push(calc, a - b); break;
+			case '*': calc = push(calc, a * b); break;
+			case '/':
+				if (b == 0) {
+					printf("Ошибка: деление на ноль!\n");
+					exit(1);
+				}
+				calc = push(calc, a / b);
+				break;
+			}
+		}
+	}
+
+	if (calc == NULL || calc->next != NULL) {
+		printf("Ошибка: неверное выражение\n");
+		exit(1);
+	}
+
+	int result = calc->data;
+	calc = pop(calc);
+	return result;
+}
+
+
+
+int sumEven(OBJ* top) {
+	int sum = 0;
+	const OBJ* current = top;
+
+	while (current != NULL) {
+		if (current->data % 2 == 0) {  
+			sum += current->data;
+		}
+		current = current->next;
+	}
+
+	return sum;
+}
+
+
+
+
+void po_vozrastaniju(OBJ** stack, int size)
+{
+	int previous = 0;
+	int currency = 0;
+	int k = size;
+	do {
+		int element = inputInt("Введите элемент стека1: ");
+		currency = element;
+		if (k != size)
+		{
+			while (currency < previous)
+			{
+				printf("Стэк должен быть заполнен по ворастанию\n");
+				rewind(stdin);
+				element = inputInt("Введите элемент стека1: ");
+				currency = element;
+
+			}
+		}
+		*stack = push(*stack, element);
+		previous = currency;
+
+		size -= 1;
+	} while (size != 0);
+
+
+}
+
+void StackFromBoth(OBJ* stack1, OBJ* stack2, OBJ** stack3) {
+	while (1) {
+
+		if (stack1 == NULL && stack2 == NULL) {
+			break;
+		}
+
+		if (stack1 != NULL && (stack2 == NULL || stack1->data >= stack2->data)) {
+			*stack3 = push(*stack3, stack1->data);  
+			stack1 = pop(stack1); 
+		}
+		else if (stack2 != NULL) {
+			*stack3 = push(*stack3, stack2->data);  
+			stack2 = pop(stack2);      
+		}
+	}
+}
+
+
+
+void task3() {
+	FILE* fp;
+	fp = fopen("primery.txt", "r");
+	if (!fp) {
+		printf("Ошибка открытия файла\n");
+		exit(1);
+	}
+
+	OBJ* output = NULL;
+	OBJ* operators = NULL;
+	int num;
+	char ch;
+
+	while (1) {
+		do {
+			ch = fgetc(fp);
+		} while (ch == ' ' || ch == '\t');
+
+		if (ch == EOF) break;
+
+		if (kris_is_digit1(ch))
+		{
+			ungetc(ch, fp);
+			fscanf(fp, "%d", &num);
+			output = push(output, num);
+		}
+		else if (ch == '(') 
+		{ 
+			operators = push(operators, ch);
+		}
+		else if (ch == ')') 
+		{ 
+			while (operators != NULL && operators->data != '(') 
+			{
+				output = push(output, operators->data);
+				operators = pop(operators);
+			}
+			if (operators == NULL) {
+				printf("Ошибка: несогласованные скобки\n");
+				exit(1);
+			}
+			operators = pop(operators);
+		}
+		else if (ch == '+' || ch == '-' || ch == '*' || ch == '/') 
+		{ 
+			while (operators != NULL && operators->data != '(' &&
+				operationPriority(operators->data) >= operationPriority(ch)) 
+			{
+				output = push(output, operators->data);
+				operators = pop(operators);
+			}
+			operators = push(operators, ch);
+		}
+		else {
+			printf("Неизвестный символ: %c\n", ch);
+			exit(1);
+		}
+	}
+
+	while (operators != NULL) {
+		if (operators->data == '(') {
+			printf("Ошибка: несогласованные скобки\n");
+			exit(1);
+		}
+		output = push(output, operators->data);
+		operators = pop(operators);
+	}
+	fclose(fp);
+	int result = PolandNotation(output);
+
+	fp = fopen("primery.txt", "a");
+	print_str(fp, result);
+	
+
+	printf("Результат: %d\n", result);
+	fclose(fp);
+}
+
+int main()
+{
+
+	setlocale(LC_ALL, "RU");
+	printf("Таска 3\n");
+	task3();
+
+
+	int n = inputPositiveInt("Введите размер стека: ");
+	OBJ* top = NULL;
+	createStack(&top, n);
+	printf("\nСумма чётных элементов стека равна: %d", sumEven(top));
+	clearStack(&top);
+
+	printf("\ntask2\n");
+
+	int size1 = inputPositiveInt("Введите размер стека1: ");
+	int size2 = inputPositiveInt("Введите размер стека2: ");
+	OBJ* stack1 = NULL;
+	OBJ* stack2 = NULL;
+	printf("\nЗаполняется первый стек\n");
+	po_vozrastaniju(&stack1, size1);
+	printf("\nЗаполняется второй стек\n");
+	po_vozrastaniju(&stack2, size2);
+
+	printf("Стек 1: ");
+	show(stack1);
+	printf("\n");
+	printf("Стек 2: ");
+	show(stack2);
+
+	OBJ* stack3 = NULL;
+	StackFromBoth(stack1, stack2, &stack3);
+
+	printf("\nНовый стек 3!!!\n");
+	show(stack3);
+
+	clearStack(&stack3);
+	clearStack(&stack2);
+	clearStack(&stack1);
+
+	return 0;
+
 }
