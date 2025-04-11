@@ -1,158 +1,260 @@
+#pragma once
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
+#include<locale.h>
+#include <windows.h>
+#include <ctype.h>
 
-typedef struct Stack {
-    int *data;
-    int top;
-    int size;
-} Stack;
-
-Stack* createStack(int size) {
-    Stack* stack = (Stack*)malloc(sizeof(Stack));
-    stack->data = (int*)malloc(size * sizeof(int));
-    stack->top = -1;
-    stack->size = size;
-    return stack;
-}
-
-void push(Stack* stack, int value) {
-    if (stack->top < stack->size - 1) {
-        stack->data[++stack->top] = value;
+int inputInt(const char* prompt)
+{
+    int value;
+    while (1)
+    {
+        printf("%s", prompt);
+        if (scanf_s("%d", &value) == 1) {
+            while (getchar() != '\n');
+            return value;
+        }
+        printf("Ошибка. Введены некорректные данные. \n");
+        while (getchar() != '\n');
     }
 }
 
-int pop(Stack* stack) {
-    if (stack->top >= 0) {
-        return stack->data[stack->top--];
+double inputDouble(const char* prompt)
+{
+    double value;
+    while (1) {
+        printf("%s", prompt);
+        if (scanf_s("%lf", &value) == 1) {
+            while (getchar() != '\n');
+            return value;
+        }
+        printf("Ошибка. Введите корректные данные: \n");
+        while (getchar() != '\n');
     }
-    return 0;
 }
 
-int isEmpty(Stack* stack) {
-    return stack->top == -1;
+int inputPositiveInt(const char* prompt)
+{
+    int value;
+    while (1) {
+        value = inputInt(prompt);
+        if (value > 0) {
+            return value;
+        }
+        printf("Ошибка. Введите положительное число: ");
+    }
 }
 
-int sumEvenNumbers(Stack* stack) {
-    int sum = 0;
-    while (!isEmpty(stack)) {
-        int value = pop(stack);
-        if (value % 2 == 0) {
-            sum += value;
+int inputIntInRange(const char* prompt, int min, int max)
+{
+    int value;
+    while (1) {
+        value = inputInt(prompt);
+        if (value >= min && value <= max) {
+            return value;
+        }
+        printf("Ошибка. Ввведено некоректное число. ");
+    }
+}
+
+
+
+int inputDoubleInRange(const char* prompt, double min, double max)
+{
+    double value;
+    while (1) {
+        value = inputDouble(prompt);
+        if (value >= min && value <= max) {
+            return value;
+        }
+        printf("Ошибка. Ввведено некоректное число. ");
+    }
+}
+
+
+
+
+char* read_data()
+{
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    setlocale(LC_ALL, "RU");
+    int size = 10;
+    int len = 0;
+    char* str = (char*)malloc(size * sizeof(char));
+    char ch;
+
+    while ((ch = getchar()) != '\n')
+    {
+
+        if (len == size - 1)
+        {
+            size += 2;
+            str = (char*)realloc(str, size * sizeof(char));
+        }
+        str[len++] = ch;
+    }
+    str[len] = '\0';
+
+    return str;
+
+}
+
+
+
+bool kris_is_digit(char c)
+{
+    char mass[44] = "0123456789/*-+!@#$%^&*()_+=)(?:%;№.,`~<>|";
+    for (int i = 0; i < 11; i++)
+    {
+        if (c == mass[i]) return false;
+
+    }
+    return true;
+}
+
+/*
+char* read_data_line()
+{
+    //char mass[12] = "0123456789.";
+    char* str = read_data();
+    if (str == NULL)
+    {
+        printf("Cтрока не должна быть пустой");
+        str = read_line();
+
+    }
+    int len_data = sizeof(str) / sizeof(char);
+    if (len_data < 5)
+    {
+        printf("Слишком мало символов для даты");
+        str = read_data_line();
+    }
+    return str;
+
+}
+*/
+
+char* read_line()
+{
+    SetConsoleOutputCP(866);
+    SetConsoleCP(CP_UTF8);
+    setlocale(LC_ALL, "RU");
+    char* str = read_data();
+    if (str == NULL)
+    {
+        printf("Cтрока не должна быть пустой");
+        str = read_line();
+
+    }
+    int len_str = sizeof(str) / sizeof(char);
+
+    for (int i = 0; i < len_str; i++)
+    {
+        if (kris_is_digit(str[i]) == false)
+        {
+            printf("Ввод не должен содержать цифры\n");
+            printf("Повторите ввод: ");
+            str = read_line();
+            break;
         }
     }
-    return sum;
+    return str;
+
+}
+int kris_is_digit1(int ch)
+{
+	return (ch >= 48 && ch <= 57);
 }
 
-void freeStack(Stack* stack) {
-    free(stack->data);
-    free(stack);
+void reading(FILE* fp)
+{
+	printf("Содержимое файла: ");
+	int value;
+	while ((fscanf(fp, "%c", &value)) != EOF)
+	{
+		printf("%c ", value);
+	}
+}
+
+int len_of_file(FILE* fp)
+{
+	int len = 0;
+	char a;
+	rewind(fp);
+	while ((fscanf(fp, "%c", &a)) != EOF)
+	{
+		len += 1;
+	}
+	return len;
+}
+
+
+void print_str(FILE* fp, int result)
+{
+	int pos = len_of_file(fp);
+	fseek(fp, pos, SEEK_SET);
+	fprintf(fp, " = %d", result);
+
 }
 
 
 
-typedef struct Stack {
-    int *data;
-    int top;
-    int size;
-} Stack;
+typedef struct tag_obj {
+	int data;
+	struct tag_obj* next;
+} OBJ;
 
-Stack* createStack(int size) {
-    Stack* stack = (Stack*)malloc(sizeof(Stack));
-    stack->data = (int*)malloc(size * sizeof(int));
-    stack->top = -1;
-    stack->size = size;
-    return stack;
+OBJ* pop(OBJ* top)
+{
+	if (top == NULL)
+		return top;
+	OBJ* ptr_next = top->next;
+	free(top);
+	return ptr_next;
 }
 
-void push(Stack* stack, int value) {
-    if (stack->top < stack->size - 1) {
-        stack->data[++stack->top] = value;
-    }
+void show(OBJ* top)
+{
+	const OBJ* current = top;
+	while (current != NULL)
+	{
+		printf("%d ", current->data);
+		current = current->next;
+	}
+
 }
 
-int pop(Stack* stack) {
-    if (stack->top >= 0) {
-        return stack->data[stack->top--];
-    }
-    return -1;
+
+OBJ* push(OBJ* top, int value)
+{
+	OBJ* ptr = (OBJ*)malloc(sizeof(OBJ));
+	ptr->data = value;
+	ptr->next = top;
+	return ptr;
 }
 
-int peek(Stack* stack) {
-    if (stack->top >= 0) {
-        return stack->data[stack->top];
-    }
-    return -1;
+int isEmpty(OBJ* top)
+{
+	return top == NULL;
 }
 
-int isEmpty(Stack* stack) {
-    return stack->top == -1;
+
+void createStack(OBJ** stack, int size)
+{
+	do {
+		int element = inputInt("Введите элемент стека: ");
+		*stack = push(*stack, element);
+		size -= 1;
+	} while (size != 0);
 }
 
-void inputAscending(Stack* stack) {
-    int n, value, previous = -1;
-    printf("Введите количество элементов: ");
-    scanf("%d", &n);
-    printf("Введите элементы по возрастанию:\n");
-    for (int i = 0; i < n; i++) {
-        scanf("%d", &value);
-        if (value >= previous) {
-            push(stack, value);
-            previous = value;
-        } else {
-            printf("Элемент должен быть больше или равен %d. Попробуйте снова.\n", previous);
-            i--;
-        }
-    }
-}
 
-void mergeStacks(Stack* stack1, Stack* stack2, Stack* resultStack) {
-    while (!isEmpty(stack1) && !isEmpty(stack2)) {
-        if (peek(stack1) <= peek(stack2)) {
-            push(resultStack, pop(stack1));
-        } else {
-            push(resultStack, pop(stack2));
-        }
-    }
-    while (!isEmpty(stack1)) {
-        push(resultStack, pop(stack1));
-    }
-    while (!isEmpty(stack2)) {
-        push(resultStack, pop(stack2));
-    }
-}
-
-void printStack(Stack* stack) {
-    while (!isEmpty(stack)) {
-        printf("%d ", pop(stack));
-    }
-    printf("\n");
-}
-
-void freeStack(Stack* stack) {
-    free(stack->data);
-    free(stack);
-}
-void task2() {
-    int size1, size2;
-    printf("Введите размер первого стека: ");
-    scanf("%d", &size1);
-    Stack* stack1 = createStack(size1);
-    inputAscending(stack1);
-
-    printf("Введите размер второго стека: ");
-    scanf("%d", &size2);
-    Stack* stack2 = createStack(size2);
-    inputAscending(stack2);
-
-    Stack* resultStack = createStack(size1 + size2);
-    mergeStacks(stack1, stack2, resultStack);
-
-    printf("Объединённый стек по возрастанию:\n");
-    printStack(resultStack);
-
-    freeStack(stack1);
-    freeStack(stack2);
-    freeStack(resultStack);
-
-
+void clearStack(OBJ** stack)
+{
+	while (*stack)
+	{
+		*stack = pop(*stack);
+	}
 }
