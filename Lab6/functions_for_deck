@@ -1,0 +1,99 @@
+#pragma once
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "checks.h"
+
+
+typedef struct deck {
+	int* de;
+	int first, last;
+} Deck;
+
+void init_deck(Deck** d)
+{
+	(*d)->first = 0;
+	(*d)->last = -1;
+}
+
+
+void print_de(Deck* deck)
+{
+	for (int i = 0; i <= deck->last; i++)
+	{
+		printf("%d ", deck->de[i]);
+	}
+
+}
+
+
+void insert_right(Deck* d, int value, int size)
+{
+	if (d->last < size - 1)
+	{
+		d->last++;
+		d->de[d->last] = value;
+	}
+	else
+	{
+		printf("Дек переполнена");
+	}
+}
+
+void insert_left(Deck* d, int value, int size)
+{
+	if (d->last - d->first <= size)
+	{
+		d->last++;
+		for (int i = d->last; i >= d->first; i--)
+		{
+			d->de[i + 1] = d->de[i];
+		}
+		d->de[d->first] = value;
+	}
+	else
+	{
+		printf("Дек переполнен");
+	}
+}
+
+void completion_deck(Deck** de, int size, int col_value) {
+	for (int i = 0; i < col_value; i++)
+	{
+		int element = inputInt("Введите элемент дека: ");
+		insert_right(*de, element, size);
+	}
+}
+void remove_deck_left(Deck* deck)
+{
+	int x;
+	x = deck->de[deck->first];
+	for (int i = deck->first; i < deck->last; i++)
+	{
+		deck->de[i] = deck->de[i + 1];
+	}
+	deck->last--;
+}
+
+
+
+void input_new_element_in_deck(Deck* deck, int value, int size) {
+
+	printf("\nПервый элемент: %d\n", deck->de[deck->first]);
+	int x = deck->de[deck->first];
+	remove_deck_left(deck);
+	if (deck->de[deck->first] == value) {
+		insert_right(deck, value, size);
+	}
+	else
+	{
+		insert_left(deck, value, size);
+	}
+}
+
+
+
+
+
