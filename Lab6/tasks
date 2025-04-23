@@ -1,0 +1,152 @@
+#pragma once
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "checks.h"
+#include "function_for_queue.h"
+#include "function_for_deck.h"
+
+void input_element_for_queue(int size, int col_num, Queue*que) {
+
+    
+
+    if (!que) {
+        printf("Ошибка выделения памяти!\n");
+        return;
+    }
+
+    que->qu = (int*)malloc(size * sizeof(int));
+    if (!que->qu) {
+        printf("Ошибка выделения памяти!\n");
+        free(que);
+        return;
+    }
+
+    init(&que);
+
+    completion(&que, size, col_num);
+
+    printf("\nСодержимое очереди:\n");
+    print_qu(que);
+
+    int value = inputInt("\nВведите элемент: ");
+
+    input_new_element(que, value, size);
+
+    if (que) {
+        printf("\nОбновленная очередь:\n");
+        print_qu(que);
+
+        free(que->qu);
+        free(que);
+    }
+    //return que;
+}
+
+
+void input_element_for_deck(int size, int col_num, Deck* deck) 
+{
+
+    if (!deck) {
+        printf("Ошибка выделения памяти!\n");
+        return;
+    }
+
+    deck->de = (int*)malloc(size * sizeof(int));
+    if (!deck->de) {
+        printf("Ошибка выделения памяти!\n");
+        free(deck);
+        return;
+    }
+
+    init_deck(&deck);
+
+    completion_deck(&deck, size, col_num);
+
+    printf("\nСодержимое очереди:\n");
+    print_de(deck);
+
+    int value = inputInt("\nВведите элемент: ");
+
+    input_new_element_in_deck(deck, value, size);
+
+    if (deck) {
+        printf("\nОбновленная очередь:\n");
+        print_de(deck);
+
+        free(deck->de);
+        free(deck);
+    }
+    //return que;
+}
+
+void both_queues()
+{
+
+   
+    int col_queues = inputIntInRange("Введите количество очередей от 2х до 5ти: ", 2, 5);
+    int size = inputPositiveInt("Введите максимальный размер очередей: ");
+    /*
+    Queue* que1 = queue_zapolnenie(col_num, 1);
+    Queue* que2 = queue_zapolnenie(col_num, 2);
+    Queue* que3 = queue_zapolnenie(col_num, 3);
+    Queue* que4, * que5;
+    
+
+    if (!que1 or !que2 or !que3) {
+        printf("Ошибка выделения памяти!\n");
+        return;
+    }
+    if (col_queues >= 4)
+    {
+        que4 = queue_zapolnenie(col_num, 4);
+        if (col_queues == 5)
+        {
+            que5 = queue_zapolnenie(col_num, 5);
+
+        }
+    }
+    */
+
+    Queue* queues[5] = {NULL};
+
+    for (int i = 0; i < col_queues; i++)
+    {
+        printf("Заполните очередь номер %d\n:", i+1);
+        queues[i] = queue_zapolnenie(size, i + 1);
+    }
+        
+    for (int i = 0; i < col_queues; i++)
+    {
+        for (int j = i+1; j < col_queues; j++)
+        {
+            if (i == j) continue;
+            if (comparison(queues[i], queues[j]))
+            {
+                printf("Очереди %d и %d равны", i+1, j+1);
+            }
+        }
+    }
+}
+
+//цвета
+#define CYAN    "\033[0;36m"
+#define GREEN   "\033[0;32m"
+#define YELLOW  "\033[0;33m"
+#define BLUE    "\033[0;34m"
+#define RED     "\033[0;31m"
+#define RESET   "\033[0m"
+
+void print_menu() {
+    system("cls || clear");
+    printf(RESET "\n--------------------------------\n");
+    printf("          " CYAN "МЕНЮ ПРОГРАММЫ" RESET "        \n");
+    printf("--------------------------------\n" RESET);
+    printf(GREEN "1. Работа с очередью\n");
+    printf("2. Работа с деком\n");
+    printf("3. Обработка нескольких очередей\n");
+    printf(RED "4. Выход\n" RESET);
+    printf("--------------------------------\n" RESET);
+}
+
+
