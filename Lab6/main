@@ -1,0 +1,52 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "checks.h"
+#include "function_for_queue.h"
+#include "function_for_deck.h"
+#include "tasks.h"
+
+int main() {
+    setlocale(LC_ALL, "ru");
+    int choice;
+
+    while (1) {
+        print_menu();
+        printf(YELLOW);
+        choice = inputIntInRange("Выберите задание: ", 1, 4);
+        printf(RESET);
+
+        if (choice == 1) {
+            system("cls");
+            printf(CYAN "\n__________ " BLUE "ЗАДАНИЕ 1" CYAN "__________\n" RESET);
+            Queue* que = (Queue*)malloc(sizeof(Queue));
+            printf(GREEN);
+            int size = inputPositiveInt("Размер очереди: ");
+            input_element_for_queue(size, inputIntInRange("Количество элементов: ", 1, size - 1), que);
+            printf(RESET);
+        }
+        else if (choice == 2) {
+            system("cls");
+            printf(CYAN "\n__________ " BLUE "ЗАДАНИЕ 2" CYAN " __________\n" RESET);
+            Deck* deck = (Deck*)malloc(sizeof(Deck));
+            printf(GREEN);
+            input_element_for_deck(inputPositiveInt("Размер дека: "), inputIntInRange("Количество элементов: ", 1, 5), deck);
+            printf(RESET);
+        }
+        else if (choice == 3) {
+            system("cls");
+            printf(CYAN "\n__________" BLUE "ЗАДАНИЕ 3" CYAN "__________\n" RESET);
+            both_queues();
+        }
+        else if (choice == 4) {
+            printf(BLUE "\nЗавершение работы...\n" RESET);
+            break;
+        }
+
+        printf(YELLOW "\nНажмите Enter..." RESET);
+        while (getchar() != '\n');
+        getchar();
+    }
+
+    return 0;
+}
