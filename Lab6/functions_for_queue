@@ -1,0 +1,138 @@
+#pragma once
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "checks.h"
+
+
+
+typedef struct queue {
+	int number;
+	int* qu;
+	int first, last;
+} Queue;
+
+
+typedef struct queue_for_3 {
+	int number;
+	int* qu;
+	int first, last;
+} Queue_new;
+
+
+void init(Queue** q)
+{
+	(*q)->first = 0;
+	(*q)->last = -1;
+}
+
+void insert(Queue* q, int value, int size)
+{
+	if (q->last < size - 1)
+	{
+		q->last++;
+		q->qu[q->last] = value;
+	}
+	else
+	{
+		printf("Очередь переполнена");
+	}
+}
+
+//size = default size
+//col_num = users size
+
+void completion(Queue** q, int size, int col_value) {
+	for (int i = 0; i < col_value; i++)
+	{
+		int element = inputInt("Введите элемент очереди: ");
+		insert(*q, element, size);
+	}
+}
+
+void print_qu(Queue* q)
+{
+	for (int i = q->first; i <= q->last; i++)
+	{
+		printf("%d ", q->qu[i]);
+	}
+
+}
+
+void queue_remove(Queue* q)
+{
+	int x;
+	x = q->qu[q->first];
+	for (int i = q->first; i < q->last; i++)
+	{
+		q->qu[i] = q->qu[i + 1];
+	}
+	q->last--;
+}
+
+bool is_empty(Queue* q)
+{
+	if (q->first < q->last)
+	{
+		printf("Очередь пуста");
+		return true;
+	}
+	else return false;
+}
+
+void input_new_element(Queue* q, int value, int size) {
+
+	printf("\nПервый элемент: %d\n", q->qu[q->first]);
+	if (q->qu[q->first] != value) {
+		insert(q, value, size);
+	}
+}
+
+bool comparison(Queue* queue1, Queue* queue2) {
+
+	if (queue1->last != queue2->last)
+	{
+		return false;
+	}
+
+
+	for (int k = 0; k < queue1->last; k++)
+	{
+		if (queue1->qu[k] != queue2->qu[k])
+		{
+			return false;
+		}
+
+	}
+
+	return true;
+}
+
+
+
+Queue* queue_zapolnenie(int size, int queue_num)
+{
+	int col_num = inputIntInRange("Введите размер очереди:", 1 , size);
+	Queue* qe = (Queue*)malloc(sizeof(Queue));
+	if (!qe) {
+		printf("Ошибка выделения памяти!\n");
+		return qe;
+	}
+
+	qe->qu = (int*)malloc(size * sizeof(int));
+
+	if (!qe->qu) {
+		printf("Ошибка выделения памяти!\n");
+		free(qe);
+
+	}
+
+	init(&qe);
+	completion(&qe, size, col_num);
+	qe->number = queue_num;
+
+	return qe;
+
+}
