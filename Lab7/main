@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "checks.h"
+#include "function_for_tree.h"
+
+
+int main() {
+    setlocale(LC_ALL, "ru");
+    Node* root = NULL;
+    int value;
+    int node_num;
+
+    system("cls");
+    printf("Введите количество элементов дерева: ");
+    scanf_s("%d", &node_num);
+    for (int i = 0; i < node_num; i++) {
+        printf("Введите узел %d: ", i + 1);
+        scanf_s("%d", &value);
+        root = add_node(value, root);
+    }
+
+    while (1) {
+
+        //print_tree_so_beauty(root, 0);
+        bool comp = false;
+        system("cls"); 
+
+
+        printf("========================================\n");
+        print_tree_in_main(root);
+
+        menu();
+
+        int choice = inputIntInRange("Введите номер задания: ", 1, 6);
+
+        system("cls"); 
+
+        if (choice == 1) {
+            free_node(root);
+            root = NULL;
+            printf("Введите количество элементов нового дерева: ");
+            scanf_s("%d", &node_num);
+            for (int i = 0; i < node_num; i++) {
+                printf("Введите узел %d: ", i + 1);
+                scanf_s("%d", &value);
+                root = add_node(value, root);
+            }
+        }
+        else if (choice == 2) {
+            print_tree_in_main(root);
+            printf("Введите значение нового узла: ");
+            scanf_s("%d", &value);
+            root = add_node(value, root);
+        }
+        else if (choice == 3) {
+            print_tree_in_main(root);
+            printf("Введите значение узла для удаления: ");
+            scanf_s("%d", &value);
+            root = delete_node(root, value);
+        }
+        else if (choice == 4) {
+            print_tree_in_main(root);
+            printf("Введите значение родителя: ");
+            scanf_s("%d", &value);
+            compearing_high(root, value);
+            while (getchar() != '\n');
+            getchar();
+        }
+        else if (choice == 5) {
+            print_tree_in_main(root);
+            printf("Родители с разными высотами потомков:\n");
+            printf("\n");
+            compare_all_heights(root, &comp);
+            if (!comp) {
+                printf("Все высоты равны\n");
+                
+            }
+            getchar();
+        }
+        else if (choice == 6) {
+            free_node(root);
+            return 0;
+        }
+    }
+    return 0;
+}
