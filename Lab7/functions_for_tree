@@ -1,0 +1,176 @@
+#pragma once
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "checks.h"
+
+typedef struct node {
+    int perent;
+    struct node* left;
+    struct node* right;
+} Node;
+
+void print_node(Node* tree) {
+    if (tree != NULL) {
+        printf("%d ", tree->perent);
+        print_node(tree->left);
+        print_node(tree->right);
+    }
+}
+
+Node* add_node(int x, Node* tree) {
+    if (tree == NULL) {
+        tree = (Node*)malloc(sizeof(Node));
+        tree->perent = x;
+        tree->left = NULL;
+        tree->right = NULL;
+    }
+    else if (x == tree->perent) {
+        printf("\nДерево уже содержит такой элемент\n");
+    }
+    else if (x < tree->perent) {
+        tree->left = add_node(x, tree->left);
+    }
+    else if (x > tree->perent) {
+        tree->right = add_node(x, tree->right);
+    }
+
+    return tree;
+}
+
+void free_node(Node* tree) {
+    if (tree != NULL) {
+        free_node(tree->left);
+        free_node(tree->right);
+        free(tree);
+    }
+}
+
+int tree_high(Node* tree) {
+    if (tree == NULL) {
+        return -1;
+    }
+    int left = tree_high(tree->left);
+    int right = tree_high(tree->right);
+    return (left > right ? left : right) + 1;
+}
+
+void print_tree_so_beauty(Node* tree, int level) {
+    if (tree != NULL) {
+        print_tree_so_beauty(tree->right, level + 1);
+        for (int i = 0; i < level; i++) {
+            printf("   ");
+        }
+        printf("%d\n", tree->perent);
+        print_tree_so_beauty(tree->left, level + 1);
+    }
+}
+
+
+
+void compare_all_heights(Node* tree, bool* comp) {
+    if (tree == NULL) {
+        return;
+    }
+
+    int left_height = tree_high(tree->left);
+    int right_height = tree_high(tree->right);
+
+    if (left_height != right_height) {
+        printf("Узел %d: высоты различны (левый: %d, правый: %d)\n",
+            tree->perent, left_height, right_height);
+        *comp = true;
+    }
+
+
+    compare_all_heights(tree->left, comp);
+    compare_all_heights(tree->right, comp);
+}
+
+
+
+
+Node* find_min(Node* tree) {
+    if (tree == NULL) return NULL;
+    while (tree->left != NULL) {
+        tree = tree->left;
+    }
+    return tree;
+}
+
+Node* delete_node(Node* tree, int value) {
+    if (tree == NULL) return tree;
+
+    if (value < tree->perent) {
+        tree->left = delete_node(tree->left, value);
+    }
+    else if (value > tree->perent) {
+        tree->right = delete_node(tree->right, value);
+    }
+    else {
+        if (tree->left == NULL) {
+            Node* temp = tree->right;
+            free(tree);
+            return temp;
+        }
+        else if (tree->right == NULL) {
+            Node* temp = tree->left;
+            free(tree);
+            return temp;
+        }
+
+        Node* temp = find_min(tree->right);
+        tree->perent = temp->perent;
+        tree->right = delete_node(tree->right, temp->perent);
+    }
+    return tree;
+}
+
+void compearing_high(Node* tree, int value) {
+    if (tree == NULL) {
+        printf("Такого значения не существует\n");
+        return;
+    }
+
+    if (value < tree->perent) {
+        compearing_high(tree->left, value);
+    }
+    else if (value > tree->perent) {
+        compearing_high(tree->right, value);
+    }
+    else {
+        int left_height = tree_high(tree->left);
+        int right_height = tree_high(tree->right);
+
+        if (left_height != right_height) {
+            printf("\nВысоты поддеревьев, где родитель %d не равны (%d и %d)\n",
+                tree->perent, left_height, right_height);
+        }
+        else {
+            printf("\nВысоты поддеревьев, где родитель %d равны (%d)\n",
+                tree->perent, left_height);
+        }
+    }
+}
+
+
+void print_tree_in_main(Node* root)
+{
+    printf("          Текущее дерево:\n");
+    printf("========================================\n");
+    print_tree_so_beauty(root, 0);
+    printf("========================================\n");
+}
+
+void menu()
+{
+    printf("\nВыберите действие:\n");
+    printf("1. Ввести дерево заново\n");
+    printf("2. Добавить лист\n");
+    printf("3. Удалить значение из дерева\n");
+    printf("4. Сравнить высоты определённых потомков\n");
+    printf("5. Найти всех родителей с разными высотами потомков\n");
+    printf("6. Выйти\n");
+    printf("========================================\n");
+}
+
